@@ -73,7 +73,7 @@ module DECOD(SEG,MINU,H,d0,d1,d2,d3,d4,d5,d6,d7);
             9: d3 <= 7'b0000100;
         endcase
         
-        case(min%10)
+        case(minu%10)
             0: d4 <= 7'b0000001;
             1: d4 <= 7'b1001111;
             2: d4 <= 7'b0010010;
@@ -86,7 +86,7 @@ module DECOD(SEG,MINU,H,d0,d1,d2,d3,d4,d5,d6,d7);
             9: d4 <= 7'b0000100;
         endcase
         
-        case((min/10)%10)
+        case((minu/10)%10)
             0: d5 <= 7'b0000001;
             1: d5 <= 7'b1001111;
             2: d5 <= 7'b0010010;
