@@ -4,6 +4,8 @@ module CRONO(clk,key0,key1,seg,minu,h);
     output reg [5:0] minu;
     output reg [4:0] h;
     
+    
+    reg [1:0] key1_state, key0_state;
     reg [15:0] counter;
     reg [5:0] estado;
     
@@ -17,16 +19,23 @@ module CRONO(clk,key0,key1,seg,minu,h);
         h <= 0;
     end
     
-    always@(posedge clk) begin  
-        counter = counter + 1;
+    always@(*) begin
+        key1_state[0] = key1;
+        key0_state[0] = key0;
     end
     
-    always@(*) begin // duvida se precisar botar o clock aq parar os minutos e horas n incremetarem dms
+    always@(posedge clk) begin  
+        counter <= counter + 1;
+        key1_state[1] = key1_state[0]; 
+        key0_state[1] = key0_state[0]; 
+    end
+    
+    always@(estado or posedge clk) begin  // duvida nesse parametro
         case(estado) 
             update_sec: begin
                 if (counter > 50000) begin
                     counter <= 0;
-                    seg = seg +1;
+                    seg <= seg +1;
                 end
             end
             
@@ -68,12 +77,14 @@ module CRONO(clk,key0,key1,seg,minu,h);
     
     
     always@(posedge clk ) begin 
+        
         case(estado) 
             update_sec: begin
-               if(
-               //else if(posedge key1) estado = pausa;
-                if(seg >= 6000)  estado = update_minu;
-                if (seg < 6000)     estado = update_sec;
+               
+                if(key1_state == 2'b01) estado = pause;
+                else if(key0_state == 2'b01 ) estado = reset;
+                else if(seg >= 6000)        estado = update_minu;
+                else if (seg < 6000)        estado = update_sec;
             end
             
             update_minu: begin
@@ -91,21 +102,13 @@ module CRONO(clk,key0,key1,seg,minu,h);
             end
             
             pause: begin
-                //if(posedge key0)      estado = reset;
-                //else if(posedge key1) estado = update_sec;
+                if(key0_state == 2'b01)      estado = reset;
+                else if(key1_state == 2'b01) estado = update_sec;
                 
             end
             
             reset: begin
-                seg  <= 0;
-                minu <= 0;
-                h    <= 0;
-            end
-            
-            default: begin
-                seg  <= 0;
-                minu <= 0;
-                h    <= 0;
+                if(key1_state == 2'b01) estado = update_sec;
             end
             
         
